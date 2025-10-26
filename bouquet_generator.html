@@ -416,7 +416,7 @@
 
     <div id="complete-button-area">
         <button id="modify-button" class="action-button">MODIFY</button>
-        <button id="write-letter-button" class="action-button">GO</button>
+        <button id="Go" class="action-button">GO</button>
     </div>
     <div id="bouquet-container">
         <img id="bouquet-back" src="bouquetbb.png" alt="꽃다발 배경 포장지">
@@ -457,7 +457,7 @@
             const completeTextArea = document.getElementById('complete-text-area');
             const completeButtonArea = document.getElementById('complete-button-area');
             const modifyButton = document.getElementById('modify-button');
-            const writeLetterButton = document.getElementById('write-letter-button'); // 캡처 및 이동 버튼
+            const Go = document.getElementById('Go'); // 캡처 및 이동 버튼
 
 
             let flowerElements = [];
@@ -757,18 +757,18 @@
             }
 
             // 🌟 6. WRITE LETTER 버튼 기능: 캡처, Blob URL 저장, 페이지 이동 🌟
-if(writeLetterButton) {
-    writeLetterButton.addEventListener('click', () => {
+if(Go) {
+    Go.addEventListener('click', () => {
         
-        writeLetterButton.textContent = "...";
-        writeLetterButton.disabled = true;
+        Go.textContent = "...";
+        Go.disabled = true;
         
         // 1. 저장된 꽃다발 데이터 로드 (꽃의 위치, 크기 정보)
         const dataString = sessionStorage.getItem('completedBouquetData');
         if (!dataString) {
             alert("꽃다발 데이터를 불러올 수 없어 캡처에 실패했습니다.");
-            writeLetterButton.textContent = "ERROR";
-            writeLetterButton.disabled = false;
+            Go.textContent = "ERROR";
+            Go.disabled = false;
             return;
         }
         const bouquetData = JSON.parse(dataString);
@@ -858,8 +858,8 @@ if(writeLetterButton) {
                     sessionStorage.removeItem('senderName'); 
                     sessionStorage.removeItem('recipientName'); 
                     
-                    writeLetterButton.textContent = "WRITE LETTER";
-                    writeLetterButton.disabled = false;
+                    Go.textContent = "WRITE LETTER";
+                    Go.disabled = false;
                     window.location.href = 'delivery.html';
 
                 }, 'image/png'); 
@@ -867,8 +867,8 @@ if(writeLetterButton) {
             }).catch(err => {
                 console.error("꽃다발 캡처 실패:", err);
                 document.body.removeChild(tempCaptureDiv);
-                writeLetterButton.textContent = "ERROR";
-                writeLetterButton.disabled = false;
+                Go.textContent = "ERROR";
+                Go.disabled = false;
                 alert("꽃다발 이미지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요.");
             });
         }, 100); 
