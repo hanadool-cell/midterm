@@ -756,60 +756,86 @@
                 });
             }
 
-            if(writeLetterButton) {
+            // 🌟 6. WRITE LETTER 버튼 기능: 캡처, Blob URL 저장, 페이지 이동 🌟
+if(writeLetterButton) {
     writeLetterButton.addEventListener('click', () => {
         
         writeLetterButton.textContent = "캡처 중...";
         writeLetterButton.disabled = true;
-
-        // 1. 임시 캡처 컨테이너 생성 및 화면 밖으로 배치
-        const tempCaptureDiv = document.createElement('div');
-        tempCaptureDiv.id = 'temp-capture-bouquet';
         
-        // CSS 애니메이션 및 화면 표시 영향 받지 않도록 설정
+        // 1. 저장된 꽃다발 데이터 로드 (꽃의 위치, 크기 정보)
+        const dataString = sessionStorage.getItem('completedBouquetData');
+        if (!dataString) {
+            alert("꽃다발 데이터를 불러올 수 없어 캡처에 실패했습니다.");
+            writeLetterButton.textContent = "ERROR";
+            writeLetterButton.disabled = false;
+            return;
+        }
+        const bouquetData = JSON.parse(dataString);
+
+        // 2. 임시 캡처 컨테이너 생성 및 화면 밖으로 배치 (가장 중요한 부분)
+        const tempCaptureDiv = document.createElement('div');
         Object.assign(tempCaptureDiv.style, {
             position: 'fixed',
             top: '-9999px',
             left: '0',
-            width: '55vw',  // #bouquet-container의 원래 너비
-            height: '90vh', // #bouquet-container의 원래 높이
+            width: '55vw',       // 원본 #bouquet-container의 크기 기준
+            height: '90vh',      // 원본 #bouquet-container의 크기 기준
             overflow: 'hidden',
             backgroundColor: 'transparent',
-            zIndex: '-1'
+            zIndex: '-1',
+            transform: 'none'    // 모든 CSS 변환 제거
         });
 
-        // 2. #bouquet-container 내부의 모든 자식 요소를 복사하여 임시 컨테이너에 추가
-        const bouquetContainer = document.getElementById('bouquet-container');
-        Array.from(bouquetContainer.children).forEach(child => {
-            // 깊은 복사 (deep clone)
-            const clonedChild = child.cloneNode(true);
-            
-            // 복사된 꽃들(draggable-flower)의 transform 값을 유지하기 위해 styles 복사
-            if (clonedChild.classList.contains('draggable-flower') || clonedChild.id === 'flower-area') {
-                 // 캡처 대상인 flower-area 내부의 꽃들은 기존의 transform 값을 그대로 복사합니다.
-                 // (flower-area 자체를 복사하면 내부의 꽃들이 복사됨)
-            } else {
-                 // 포장지 이미지들은 position:absolute와 transform:translateX(-50%)를 유지해야 합니다.
-            }
-            tempCaptureDiv.appendChild(clonedChild);
+        // 3. 포장지 이미지와 꽃 영역 DOM을 임시 컨테이너에 재구성
+        const bouquetBack = document.createElement('img');
+        bouquetBack.src = "bouquetbb.png"; 
+        Object.assign(bouquetBack.style, {
+            position: "absolute", bottom: "1vh", left: "45%", transform: "translateX(-50%)",
+            width: "auto", height: '98%', zIndex: "1"
         });
-        
-        // flower-area 내부의 꽃들을 복사된 tempCaptureDiv의 flower-area에 다시 삽입해야 함 (DOM 구조 유지)
-        const originalFlowerArea = document.getElementById('flower-area');
-        const tempFlowerArea = tempCaptureDiv.querySelector('#flower-area');
-        
-        if (originalFlowerArea && tempFlowerArea) {
-             // 기존 flower-area의 자식 요소(꽃)들을 복사하여 tempFlowerArea에 삽입
-             Array.from(originalFlowerArea.children).forEach(flower => {
-                 tempFlowerArea.appendChild(flower.cloneNode(true));
-             });
-             // flower-area의 clip-path와 z-index가 유지되도록 복사했는지 확인 (CSS가 처리)
-             
-        }
-        
+
+        const tempFlowerArea = document.createElement('div');
+        Object.assign(tempFlowerArea.style, {
+            position: "absolute", top: "6%", left: "7%", width: "74%", height: "60%",
+            zIndex: "2", 
+            // 🚨 캡처 시 잘림 방지: clip-path를 제거합니다. 🚨
+            clipPath: "none", 
+            // 포장지에 가려지는 것은 bouquetFront가 처리할 것입니다.
+        });
+
+        const bouquetFront = document.createElement('img');
+        bouquetFront.src = "bouquetff.png"; 
+        Object.assign(bouquetFront.style, {
+            position: "absolute", bottom: "1vh", left: "45%", transform: "translateX(-50%)",
+            width: "auto", height: "70%", zIndex: "3"
+        });
+
+        tempCaptureDiv.appendChild(bouquetBack);
+        tempCaptureDiv.appendChild(tempFlowerArea);
+        tempCaptureDiv.appendChild(bouquetFront);
+
+        // 4. 저장된 데이터로 꽃 요소를 재배치
+        bouquetData.forEach(flower => {
+            const flowerDiv = document.createElement('img');
+            flowerDiv.src = flower.imgSrc;
+            flowerDiv.alt = flower.alt;
+            
+            // 저장된 스타일 값을 그대로 복사
+            Object.assign(flowerDiv.style, {
+                position: "absolute",
+                width: flower.width, // 예: "10vw"
+                height: "auto",
+                zIndex: flower.zIndex,
+                transform: flower.transform, // 예: translate(Xpx, Ypx) rotate(0deg) scaleX(1)
+                filter: "drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.6))"
+            });
+            tempFlowerArea.appendChild(flowerDiv);
+        });
+
         document.body.appendChild(tempCaptureDiv);
 
-        // 3. 캡처 실행 (100ms 대기 후 실행하여 DOM 복제 완료 보장)
+        // 5. 캡처 실행 (안정화를 위해 100ms 대기)
         setTimeout(() => {
             
             html2canvas(tempCaptureDiv, {
@@ -817,22 +843,17 @@
                 backgroundColor: null,
                 width: tempCaptureDiv.offsetWidth,
                 height: tempCaptureDiv.offsetHeight,
-                // 스크롤이 있을 경우 대비
-                windowWidth: tempCaptureDiv.offsetWidth,
-                windowHeight: tempCaptureDiv.offsetHeight
             }).then(canvas => {
                 
-                // 4. Blob으로 변환 및 URL 생성
+                // 6. Blob으로 변환 및 URL 저장
                 canvas.toBlob(function(blob) {
                     const finalBouquetBlobURL = URL.createObjectURL(blob);
-                    
-                    // 5. 세션 스토리지에 저장
                     sessionStorage.setItem('finalBouquetImageURL', finalBouquetBlobURL);
                     
-                    // 6. 임시 컨테이너 제거
+                    // 7. 임시 컨테이너 제거
                     document.body.removeChild(tempCaptureDiv);
                     
-                    // 7. 불필요한 세션 스토리지 데이터 제거 및 이동
+                    // 8. 다음 페이지로 이동
                     sessionStorage.removeItem('capturedLetterImageURL'); 
                     sessionStorage.removeItem('senderName'); 
                     sessionStorage.removeItem('recipientName'); 
@@ -845,8 +866,7 @@
                 
             }).catch(err => {
                 console.error("꽃다발 캡처 실패:", err);
-                document.body.removeChild(tempCaptureDiv); // 실패해도 제거
-                
+                document.body.removeChild(tempCaptureDiv);
                 writeLetterButton.textContent = "ERROR";
                 writeLetterButton.disabled = false;
                 alert("꽃다발 이미지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요.");
