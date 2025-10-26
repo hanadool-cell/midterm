@@ -416,7 +416,7 @@
 
     <div id="complete-button-area">
         <button id="modify-button" class="action-button">MODIFY</button>
-        <button id="write-letter-button" class="action-button">WRITE LETTER</button>
+        <button id="write-letter-button" class="action-button">GO</button>
     </div>
     <div id="bouquet-container">
         <img id="bouquet-back" src="bouquetbb.png" alt="꽃다발 배경 포장지">
@@ -760,7 +760,7 @@
 if(writeLetterButton) {
     writeLetterButton.addEventListener('click', () => {
         
-        writeLetterButton.textContent = "캡처 중...";
+        writeLetterButton.textContent = "...";
         writeLetterButton.disabled = true;
         
         // 1. 저장된 꽃다발 데이터 로드 (꽃의 위치, 크기 정보)
