@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Bouquet - 편지 보내기</title>
+    
+    <script src="https://cdn.emailjs.com/sdk/2.3/email.min.js"></script> 
+    <script>
+        // EmailJS 초기화 (User ID: 0Ln1HIMpi2GxS6juR)
+        (function() {
+           emailjs.init("0Ln1HIMpi2GxS6juR"); 
+        })();
+    </script>
+    <script>
+  (function(d) {
+    var config = {
+      kitId: 'bno4gef',
+      scriptTimeout: 3000,
+      async: true
+    },
+    h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+  })(document);
+</script>
+    <link rel="stylesheet" href="https://use.typekit.net/bno4gef.css">
+
+    <style>
+        /* --- 기본 스타일 (기존 페이지와 동일) --- */
+        body {
+            background-image: url('gridback.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            height: 100vh;
+            margin: 0;
+            font-family: "pretendard", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            overflow: hidden;
+            position: relative;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30vh;
+            background:  linear-gradient(to top, #cdff453e, rgba(94, 255, 252, 0.13),rgba(176, 255, 65, 0));
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* --- 중앙 이메일 폼 스타일 --- */
+        #email-send-container {
+            width: 40vw;
+            max-width: 500px;
+            padding-left: 3vw;
+            padding-right: 3vw;
+            padding-top: 1vw;
+            padding-bottom: 4vw;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            z-index: 10;
+        }
+
+        h2 {
+            font-size: 2vw;
+            font-weight: 400;
+            margin-bottom: 3vw;
+            
+            color: #cdff45;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 1.1vw;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        #recipient-email {
+            width: 100%;
+            padding: 1vw;
+            box-sizing: border-box;
+            font-size: 1.3vw;
+            font-family: "pretendard", sans-serif;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #cdff4561;
+            color: white;
+        }
+        #recipient-email:focus {
+            outline: none;
+            border-color: #cdff45;
+        }
+
+        #send-final-button {
+           padding: 1vw 15.2vw;
+            font-size: 2vw;
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 900;
+            font-style: regular;
+            color: #cdff45;
+            background: rgba(0, 0, 0, 0.434);
+            border: #cdff45 1px solid ;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #send-final-button:hover {
+             background: #cdff45;
+             color: rgb(0, 0, 0);
+        }
+    </style>
+    
+</head>
+<body>
+    <div id="email-send-container">
+        <h2>편지를 받을 분의 이메일 주소를 작성해주세요.</h2>
+        <div class="input-group">
+            
+            <input type="email" id="recipient-email" placeholder="example@email.com" required>
+        </div>
+        <button id="send-final-button">SEND</button>
+    </div>
+
+    
+    <script>
+        document.getElementById('send-final-button').addEventListener('click', () => {
+            const email = document.getElementById('recipient-email').value;
+            const sendButton = document.getElementById('send-final-button');
+
+            if (!email || !email.includes('@')) {
+                alert('유효한 이메일 주소를 입력해주세요.');
+                return;
+            }
+            
+            // UI를 '전송 중' 상태로 즉시 변경
+            sendButton.textContent = "SENDING...";
+            sendButton.disabled = true;
+
+            // 1. 세션 스토리지에서 이미지 데이터 로드
+            const finalBouquetImageURL = sessionStorage.getItem('finalBouquetImageURL');
+            const capturedLetterImageURL = sessionStorage.getItem('capturedLetterImageURL');
+            const senderName = sessionStorage.getItem('senderName') || '익명의 발신자';
+
+            if (!finalBouquetImageURL || !capturedLetterImageURL) {
+                console.error('이미지 데이터 손실!');
+                alert('이미지 데이터가 손실되었습니다. 다시 편지를 작성해주세요.');
+                window.location.href = 'write_letter.html'; 
+                return; 
+            }
+            
+            // 2. EmailJS 템플릿 변수 설정
+            const templateParams = {
+                to_email: email,
+                sender_name: senderName, 
+                bouquet_image: finalBouquetImageURL, 
+                letter_image: capturedLetterImageURL
+            };
+            
+            // 3. EmailJS를 사용한 실제 전송 시도 (비동기적으로 실행하고 결과를 기다리지 않습니다)
+            emailjs.send('service_8h9cb4c', 'template_yu3rfvc', templateParams) 
+                .then((response) => {
+                   console.log('Email successfully queued for sending (SUCCESS):', response.status);
+                   // 성공 알림 없이 다음 페이지로 이동
+                }, (err) => {
+                   console.error('Email sending failed (BACKGROUND ERROR):', err);
+                   // 실패 시에도 사용자에게 경고 없이 다음 페이지로 진행
+                });
+            
+            // ------------------------------------------------------------------
+            // [핵심]: 전송 결과(Promise)를 기다리지 않고 즉시 다음 페이지로 이동
+            // ------------------------------------------------------------------
+            sessionStorage.setItem('recipientEmail', email); 
+            window.location.href = "delivery.html";
+            
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Bouquet - 나만의 꽃다발</title>
+
+    <link rel="stylesheet" href="https://use.typekit.net/bno4gef.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+
+    <style>
+        
+        
+        /* --- 기본 스타일 --- */
+        body {
+            background-image: url('gridback.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            height: 100vh;
+            margin: 0;
+            font-family: "pretendard", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            overflow: hidden;
+            position: relative; /* 자식 absolute 요소들의 기준점 */
+            /* display: flex; justify-content: center; align-items: center; 제거 */
+        }
+
+        body::before { display: none; }
+        body::after {
+            content: "";
+            position: fixed; /* 화면 전체 고정 */
+            bottom: 0; /* 하단 정렬 */
+            left: 0;
+            width: 100%;
+            height: 30vh; /* 화면 높이의 40%만큼 그라데이션 적용 (조절 가능) */
+            /* 아래에서 위로 (진한 색 -> 투명) */
+            background:  linear-gradient(to top, #cdff453e, rgba(94, 255, 252, 0.13),rgba(176, 255, 65, 0));
+            z-index: -1; /* gridback.jpg보다는 위, 콘텐츠보다는 아래 */
+            pointer-events: none; /* 클릭 방해 금지 */
+        }
+
+        /* --- 1. 헤더 영역 (좌측 상단 고정) --- */
+        #header-area {
+            background-color: transparent;
+            width: 45vw; /* 좌측 영역 너비 */
+            height: 100vh; /* 화면 전체 높이 유지 */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 위에서부터 배치 */
+            align-items: flex-start; /* 왼쪽 정렬 */
+            position: absolute; /* **[수정]** 절대 위치 */
+            top: 0; /* **[수정]** 상단 고정 */
+            left: 0; /* **[수정]** 좌측 고정 */
+            padding: 3vh 3.5vw; /* 패딩 */
+            text-align: left; /* 왼쪽 정렬 */
+            z-index: 10;
+        }
+
+       
+         #header-area::after {
+             display: none;
+         }
+
+        #header-area h1 {
+            font-size: 3vw;
+            color: white;
+            margin-top: 5vh;
+            margin-bottom: 1.5vw;
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+            letter-spacing: -0.01vw;
+            line-height: 1.1;
+            text-shadow: #00000043 0 0 0.5vw;
+        }
+
+        #header-area h1 .special-font { /* (LOVE) */
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 500;
+            font-style: italic;
+            letter-spacing: -0.2vw;
+            font-size: 3.5vw;
+            background: linear-gradient(to right, #cdff45, #5efffc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: none;
+        }
+        #header-area h1 .special-font2 { /* 괄호 */
+             font-family: "pretendard", sans-serif;
+             font-weight: 300;
+             font-style: italic;
+             letter-spacing: 0vw;
+             font-size: 3.2vw;
+        }
+
+        #header-area p {
+            font-size: 1.3vw;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0 0 4vh 0;
+            position: relative;
+            z-index: 11;
+            opacity: 0.8;
+            font-weight: 300;
+            letter-spacing: 0.7px;
+        }
+        /* 설명 박스 */
+        #description-box {
+            width: 36%; /* 헤더 패딩 제외한 부모 너비 기준 */
+            height: 39%;
+            background-color: rgba(0, 0, 0, 0.2); /* 반투명 배경 */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* 얇은 테두리 */
+            z-index: 11;
+            top: 32%;
+            position: absolute;
+            border: #cdff45 1px solid;
+            left: 3.5%;
+        }
+
+        #description-box h1 {
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            letter-spacing: -0.2vw;
+            font-size: 2.4vw;
+            background: #cdff45;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: none;
+            text-align: center;
+            
+            
+        }
+        #description-box p {
+            font-family: "pretendard", sans-serif; /* Pretendard 폰트 적용 */
+            font-size: 1.2vw;
+            font-weight: 300;
+            line-height: 1.6;
+            margin: 0;
+            opacity: 1;
+            color:#cdff45; /* p 태그 스타일 상속/재정의 */
+            text-align: left;
+            margin-top: 2.6vw;
+            margin-left: 2vw; /* 좌측 정렬 */
+            letter-spacing: 1.4px; /* 자간 조정 */
+            line-height: 1.7;
+            display: flex;
+        }
+
+        /* --- 꽃다발 컨테이너 (우측 중앙 고정) --- */
+       #bouquet-container {
+            width: 55vw; /* 우측 영역 너비 */
+            height: 90vh; /* 이전 높이 유지 */
+            position: absolute; /* 절대 위치 */
+            right: 0; /* 오른쪽에 붙임 */
+            top: 50%; /* 세로 중앙 시작점 */
+            transform: translateY(-50%); /* 세로 중앙 정렬 */
+            background-color: transparent; /* **[수정]** 처음에는 투명하게 */
+            
+            overflow: hidden;
+            z-index: 5;
+            /* 애니메이션을 위한 transition */
+            transition: transform 1.6s ease-in-out, background-color 0.8s ease-in-out, width 1.6s ease-in-out, height 1.6s ease-in-out, left 1.6s ease-in-out, right 1.6s ease-in-out, top 1.6s ease-in-out;
+        }
+
+       /* 꽃다발 배경 포장지 (이전 값 유지) */
+        #bouquet-back {
+            position: absolute;
+            bottom: 1vh;
+            left: 45%;
+            transform: translateX(-50%);
+            width: auto; /* 이전 값 유지 */
+            height: 98%;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* 꽃 배치 영역 (이전 값 유지) */
+        #flower-area {
+            position: absolute;
+            top: 6%;
+            left: 7%;
+            width: 74%; /* 이전 값 유지 (필요시 조정) */
+            height: 60%; /* 이전 값 유지 */
+            z-index: 2;
+            pointer-events: none;
+            clip-path: polygon(0% 0%, 100% 0%, 68% 100%,32% 100%);
+            
+            
+            
+        }
+
+        /* 꽃다발 전경 포장지 (이전 값 유지) */
+        #bouquet-front {
+            position: absolute;
+            bottom: 1vh;
+            left: 45%;
+            transform: translateX(-50%);
+            width: auto; /* 이전 값 유지 */
+            height: 70%;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* 개별 꽃 이미지 */
+        .draggable-flower {
+            position: absolute;
+            width: 10vw; /* **[수정]** 이전 값 유지 (혹은 11vw 등 약간 키울 수 있음) */
+            height: auto;
+            cursor: grab;
+            z-index: 2;
+            transition: transform 0.2s ease-out, box-shadow 0.1s ease-out;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: auto;
+            filter: drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.6));
+        }
+
+        .draggable-flower.dragging {
+            cursor: grabbing;
+            z-index: 10;
+        }
+
+       
+        /* Typekit 로딩 */
+        .wf-loading body { visibility: hidden; }
+        .wf-active body { visibility: visible; }
+
+
+
+     
+
+         /* --- 버튼 영역 (좌측 하단) --- */
+        #button-area {
+            position: absolute; /* 절대 위치 */
+            left: 3.5vw; /* 헤더 좌측 패딩과 맞춤 */
+            bottom: 18vh;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* 왼쪽 정렬 */
+        }
+
+        #next-button {
+            padding: 1vw 5vw;
+            font-size: 2vw;
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 900;
+            font-style: regular;
+            color: #cdff45;
+            background: rgba(0, 0, 0, 0.434);
+            border: #cdff45 1px solid ; /* **[수정]** 테두리 색상 명시 */
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s; /* **[수정]** color 전환 추가 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #next-button:hover {
+             background: #cdff45; /* **[수정]** 호버 배경색 변경 */
+             color: rgb(0, 0, 0); /* **[추가]** 호버 시 텍스트 색상 변경 */
+        }
+        /* --- **[아래 코드 블록 전체 추가]** --- */
+        
+        /* --- 완성 뷰 스타일 --- */
+
+        /* body에 complete-view 클래스가 추가되었을 때 */
+        body.complete-view #header-area {
+            width: 100vw; /* 전체 너비 */
+            height: 35vh; /* **[수정]** 상단 35% 높이 (텍스트/버튼 공간) */
+            justify-content: center; /* 수직 중앙 정렬 */
+            align-items: center; /* 수평 중앙 정렬 */
+            text-align: center; /* 텍스트 중앙 정렬 */
+            padding: 0;
+            top: 0;
+            left: 50;
+            z-index: 10; /* 꽃다발보다 낮게 */
+        }
+        body.complete-view #header-area h1,
+        body.complete-view #header-area p,
+        body.complete-view #description-box,
+        body.complete-view #button-area {
+            opacity: 0;
+            pointer-events: none; /* 클릭 방지 */
+        }
+
+        /* 꽃다발 컨테이너 중앙 이동 및 스케일 */
+        body.complete-view #bouquet-container {
+            width: 55vw; /* 너비 유지 */
+            height: 90vh; /* 높이 유지 */
+            left: 52%; /* 가로 중앙 */
+            top: 54%; /* 세로 중앙 */
+            right: auto; /* right: 0 속성 무효화 */
+            transform: translate(-50%, -50%) scale(0.65); /* **[수정]** 중앙 정렬 및 축소 비율을 0.65로 약간 더 줄임 */
+            z-index: 20; /* 헤더보다 앞으로 */
+            background-color: rgba(0, 0, 0, 0); /* **[추가]** 완성 시 배경색 다시 표시 */
+            
+        }
+
+        /* 완성 시 꽃 영역 테두리/클립패스 제거 */
+        body.complete-view #flower-area {
+            border: none; /* **[수정]** 테두리 없음 */
+            clip-path: none; /* **[수정]** 클립패스 없음 */
+        }
+
+        /* 완성 뷰 텍스트 영역 */
+        #complete-text-area {
+           position: absolute;
+            top: 5vh; /* 하단 여유 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            display: none; /* 초기 숨김 */
+            opacity: 0;
+            transition: opacity 0.5s ease-out 0.5s; /* 0.5초 뒤에 나타남 */
+            
+            display: flex; /* **[수정]** flex로 변경 */
+            text-align: center;
+        }
+        #complete-text-area h1 {
+            font-size: 3vw;
+            color: white;
+            margin-top: 5vh;
+            margin-bottom: 1vw;
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+            letter-spacing: -0.01vw;
+            line-height: 1.1;
+            text-shadow: #00000043 0 0 0.5vw;
+        }
+        #complete-text-area h1 .special-font { /* (LOVE) */
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 500;
+            font-style: italic;
+            letter-spacing: -0.2vw;
+            font-size: 3.5vw;
+            background: linear-gradient(to right, #cdff45, #5efffc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: none;
+        }
+        #complete-text-area h1 .special-font2 { /* 괄호 */
+             font-family: "pretendard", sans-serif;
+             font-weight: 300;
+             font-style: italic;
+             letter-spacing: 0vw;
+             font-size: 3.2vw;
+         }
+        #complete-text-area p {
+            font-size: 1.2vw; /* 헤더 p와 비슷하게 */
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 1.5vh;
+            font-weight: 300;
+            letter-spacing: 0.7px;
+        }
+        
+        /* 완성 뷰 버튼 영역 */
+        #complete-button-area {
+            position: absolute;
+            bottom: 6vh; /* 하단 여유 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            display: none; /* 초기 숨김 */
+            opacity: 0;
+            transition: opacity 0.5s ease-out 0.5s; /* 0.5초 뒤에 나타남 */
+            gap: 2vw;
+            display: flex; /* **[수정]** flex로 변경 */
+        }
+
+        /* 기존 .action-button 스타일 재사용 */
+        #complete-button-area .action-button {
+            padding: 1vw 5vw;
+            font-size: 2vw;
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 900;
+            font-style: regular;
+            color: #cdff45;
+            background: rgba(0, 0, 0, 0.434);
+            border: #cdff45 1px solid ; /* **[수정]** 테두리 색상 명시 */
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s; /* **[수정]** color 전환 추가 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            
+        }
+        #complete-button-area .action-button:hover {
+             background: #cdff45;
+             color: rgb(0, 0, 0);
+        }
+      
+    </style>
+    
+</head>
+<body>
+    <div id="header-area">
+        <h1>MOVE THE FLOWERS IN YOUR<span class="special-font2">( </span><span class="special-font">STLYE</span><span class="special-font2">) </span></h1>
+        <p>꽃을 드래그하고 원하는 배치로 옮겨, 꽃다발을 완성해보세요.</p>
+        </div>
+        <div id="description-box">
+            <h1>GUIDE</h1>
+            <p>1. 한 꽃다발은 총 7개의 꽃으로 이루어져 있습니다!<br><br> 2. 꽃을 더블 클릭하면 좌우를 반전 시킬 수 있습니다! <br><br> 3. 꽃을 드래그하고 있는 상태에서 스페이스바를  
+             누르면 해당 <br> 꽃을 뒤로 보낼 수 있습니다!</p>
+        </div>
+        <div id="complete-text-area">
+        <h1><span class="special-font2">( </span><span class="special-font">LOVE</span><span class="special-font2"> ) </span>BOUQUET IS COMPLETE!</h1>
+        <p>꽃다발을 완성했어요! 함께 전할 편지를 남기러 가볼까요?</p>
+    </div>
+
+    <div id="complete-button-area">
+        <button id="modify-button" class="action-button">MODIFY</button>
+        <button id="write-letter-button" class="action-button">WRITE LETTER</button>
+    </div>
+    <div id="bouquet-container">
+        <img id="bouquet-back" src="bouquetbb.png" alt="꽃다발 배경 포장지">
+        <div id="flower-area">
+            </div>
+        <img id="bouquet-front" src="bouquetff.png" alt="꽃다발 전경 포장지">
+
+    
+
+
+       
+    </div>
+      <div id="button-area">
+        <button id="next-button">NEXT</button> </div>
+
+    <script>
+      (function(d) {
+        var config = {
+          kitId: 'bno4gef',
+          scriptTimeout: 3000,
+          async: true
+        },
+        h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+      })(document);
+    </script>
+
+  <script>
+       document.addEventListener('DOMContentLoaded', () => {
+            const bouquetContainer = document.getElementById('bouquet-container');
+            const flowerPlacementArea = document.getElementById('flower-area');
+            const totalFlowersToGenerate = 7; 
+
+            // 버튼 및 UI 요소 참조
+            const nextButton = document.getElementById('next-button');
+            const headerArea = document.getElementById('header-area');
+            const descriptionBox = document.getElementById('description-box');
+            const buttonArea = document.getElementById('button-area');
+            const completeTextArea = document.getElementById('complete-text-area');
+            const completeButtonArea = document.getElementById('complete-button-area');
+            const modifyButton = document.getElementById('modify-button');
+            const writeLetterButton = document.getElementById('write-letter-button'); // 캡처 및 이동 버튼
+
+
+            let flowerElements = [];
+            let highestFlowerZIndex = 2; 
+
+            // 1. 이전 페이지 꽃 정보 가져오기 (로직 유지)
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedFlowerNamesString = urlParams.get('flowers');
+            let availableFlowers = [];
+            if (selectedFlowerNamesString) {
+                const flowerNames = selectedFlowerNamesString.split(',');
+                const allFlowerData = {
+                    "Iris": { imgSrc: "love/iris.png", name: "Iris" },
+                    "Lily": { imgSrc: "love/lily.png", name: "Lily" },
+                    "Myosotis": { imgSrc: "love/Myosotis.png", name: "Myosotis" },
+                    "Rose": { imgSrc: "love/rose.png", name: "Rose" },
+                    "Peony": { imgSrc: "Celebration/Peony.png", name: "Peony" },
+                    "BirdofParadise": { imgSrc: "Celebration/BirdofParadise.png", name: "BirdofParadise" },
+                    "PhalaenopsisOrchid": { imgSrc: "Celebration/PhalaenopsisOrchid.png", name: "PhalaenopsisOrchid" },
+                    "Gerbera": { imgSrc: "Celebration/Gerbera.png", name: "Gerbera" },
+                    "daisy": { imgSrc: "Gratitude/daisy.png", name: "daisy" },
+                    "SweetPea": { imgSrc: "Gratitude/SweetPea.png", name: "SweetPea" },
+                    "Freesia": { imgSrc: "Gratitude/Freesia.png", name: "Freesia" },
+                    "Hydrangea": { imgSrc: "Gratitude/Hydrangea.png", name: "Hydrangea" },
+                    "Anemone": { imgSrc: "Cheer/Anemone.png", name: "Anemone" },
+                    "Gomphrena": { imgSrc: "Cheer/Gomphrena.png", name: "Gomphrena" },
+                    "Sunflower": { imgSrc: "Cheer/Sunflower.png", name: "Sunflower" },
+                    "Cyclamen": { imgSrc: "Cheer/Cyclamen.png", name: "Cyclamen" }
+                };
+                availableFlowers = flowerNames.map(name => allFlowerData[name.trim()]).filter(Boolean);
+            }
+            if (availableFlowers.length === 0) {
+                console.warn("선택된 꽃이 없습니다. 기본 꽃으로 생성합니다.");
+                availableFlowers.push({ imgSrc: "love/rose.png", name: "Rose" });
+            }
+
+            // 2. 꽃 랜덤 배치 함수 (로직 유지)
+            function generateRandomFlowers() {
+                flowerElements.forEach(flower => flower.remove());
+                flowerElements = [];
+                highestFlowerZIndex = 2; 
+
+                if (!flowerPlacementArea) { return; }
+
+                setTimeout(() => {
+                    const areaRect = flowerPlacementArea.getBoundingClientRect();
+                    const areaWidth = areaRect.width;
+                    const areaHeight = areaRect.height;
+
+                    if (areaWidth <= 0 || areaHeight <= 0) { return; }
+
+                    const flowerWidthVW = 11; 
+
+                    for (let i = 0; i < totalFlowersToGenerate; i++) {
+                        const randomFlowerData = availableFlowers[Math.floor(Math.random() * availableFlowers.length)];
+                        const flowerDiv = document.createElement('img');
+                        flowerDiv.src = randomFlowerData.imgSrc;
+                        flowerDiv.alt = randomFlowerData.name;
+                        flowerDiv.classList.add('draggable-flower');
+
+                        flowerDiv.style.width = `${flowerWidthVW}vw`;
+
+                        const tempDiv = document.createElement('div');
+                        tempDiv.style.position = 'absolute'; tempDiv.style.visibility = 'hidden';
+                        tempDiv.style.width = `${flowerWidthVW}vw`;
+                        document.body.appendChild(tempDiv);
+                        const flowerWidth = tempDiv.offsetWidth; document.body.removeChild(tempDiv);
+                        const flowerHeight = flowerWidth;
+
+                        const randomTranslateX = (areaWidth / 2 - flowerWidth / 2) + (Math.random() - 0.5) * (areaWidth * 0.4);
+                        const randomTranslateY = Math.pow(Math.random(), 1.5) * Math.max(0, (areaHeight / 3) - flowerHeight);
+                        const finalX = Math.max(0, Math.min(randomTranslateX, areaWidth - flowerWidth));
+                        const finalY = Math.max(0, Math.min(randomTranslateY, areaHeight - flowerHeight));
+                        const initialRotate = 0;
+                        const initialScaleX = 1;
+
+                        flowerDiv.style.transform = `translate(${finalX}px, ${finalY}px) rotate(${initialRotate}deg) scaleX(${initialScaleX})`;
+                        flowerDiv.dataset.translateX = finalX;
+                        flowerDiv.dataset.translateY = finalY;
+                        flowerDiv.dataset.rotate = initialRotate;
+                        flowerDiv.dataset.scaleX = initialScaleX;
+
+                        flowerPlacementArea.appendChild(flowerDiv);
+                        flowerElements.push(flowerDiv);
+                    }
+                    attachDragEvents();
+                }, 250);
+            }
+
+            // 3. 드래그 앤 드롭 기능 (로직 유지)
+            let activeItem = null;
+            let initialClientX, initialClientY;
+            let initialTranslateX, initialTranslateY;
+            let currentRotate;
+            let currentScaleX;
+
+            function attachDragEvents() {
+                flowerElements.forEach(item => {
+                    item.addEventListener('touchstart', dragStart, { passive: false });
+                    item.addEventListener('touchend', dragEnd, false);
+                    item.addEventListener('touchmove', drag, { passive: false });
+                    item.addEventListener('mousedown', dragStart, false);
+                    item.addEventListener('dblclick', flipItem);
+                });
+                document.addEventListener('mousemove', drag, false);
+                document.addEventListener('mouseup', dragEnd, false);
+            }
+
+            function handleKeyDown(e) {
+                if (activeItem && (e.key === ' ' || e.code === 'Space')) {
+                    e.preventDefault(); 
+                    activeItem.style.zIndex = 2; 
+                    console.log('Sent to back (z-index: 2)');
+                }
+            }
+
+            function flipItem(e) { 
+                const targetItem = e.target;
+                if (!targetItem.classList.contains('draggable-flower') || activeItem) { return; }
+
+                let currentScale = parseFloat(targetItem.dataset.scaleX || 1);
+                const currentTranslateX = parseFloat(targetItem.dataset.translateX || 0);
+                const currentTranslateY = parseFloat(targetItem.dataset.translateY || 0);
+                const currentRotation = parseFloat(targetItem.dataset.rotate || 0);
+
+                currentScale *= -1;
+
+                targetItem.dataset.scaleX = currentScale;
+                targetItem.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) rotate(${currentRotation}deg) scaleX(${currentScale})`;
+            }
+
+            function dragStart(e) { 
+                if (e.target.classList.contains('draggable-flower')) {
+                    activeItem = e.target;
+                    activeItem.classList.add('dragging');
+                    activeItem.style.zIndex = 100; 
+
+                    initialTranslateX = parseFloat(activeItem.dataset.translateX || 0);
+                    initialTranslateY = parseFloat(activeItem.dataset.translateY || 0);
+                    currentRotate = parseFloat(activeItem.dataset.rotate || 0);
+                    currentScaleX = parseFloat(activeItem.dataset.scaleX || 1);
+
+                    if (e.type === "touchstart") {
+                        initialClientX = e.touches[0].clientX;
+                        initialClientY = e.touches[0].clientY;
+                    } else {
+                        initialClientX = e.clientX;
+                        initialClientY = e.clientY;
+                    }
+                    e.preventDefault();
+
+                    document.addEventListener('keydown', handleKeyDown);
+                }
+            }
+
+            function drag(e) { 
+                if (!activeItem) return;
+                e.preventDefault();
+
+                let currentClientX, currentClientY;
+                if (e.type === "touchmove") {
+                    currentClientX = e.touches[0].clientX;
+                    currentClientY = e.touches[0].clientY;
+                } else {
+                    currentClientX = e.clientX;
+                    currentClientY = e.clientY;
+                }
+
+                const dx = currentClientX - initialClientX;
+                const dy = currentClientY - initialClientY;
+                let newTranslateX = initialTranslateX + dx;
+                let newTranslateY = initialTranslateY + dy;
+
+                // 드래그 제한 로직
+                 const areaRect = flowerPlacementArea.getBoundingClientRect();
+                 const itemRect = activeItem.getBoundingClientRect();
+                 const itemWidth = itemRect.width;
+                 const itemHeight = itemRect.height;
+                 const minX = 0;
+                 const maxX = areaRect.width - itemWidth;
+                 const minY = 0;
+                 const maxY = areaRect.height - itemHeight;
+                 newTranslateX = Math.max(minX, Math.min(newTranslateX, maxX));
+                 newTranslateY = Math.max(minY, Math.min(newTranslateY, maxY));
+
+                activeItem.style.transform = `translate(${newTranslateX}px, ${newTranslateY}px) rotate(${currentRotate}deg) scaleX(${currentScaleX})`;
+            }
+
+            function dragEnd(e) { 
+                document.removeEventListener('keydown', handleKeyDown);
+
+                if (!activeItem) return;
+
+                activeItem.classList.remove('dragging');
+
+                if (activeItem.style.zIndex != 2) { 
+                    highestFlowerZIndex++;
+                    activeItem.style.zIndex = highestFlowerZIndex;
+                }
+
+                const currentTransform = activeItem.style.transform;
+                const transformMatch = currentTransform.match(/translate\(([-.\d]+)px,\s*([-.\d]+)px\)/);
+                if(transformMatch) {
+                     activeItem.dataset.translateX = transformMatch[1];
+                     activeItem.dataset.translateY = transformMatch[2];
+                } else {
+                     console.warn("Could not parse translate values.");
+                     const clientX = e.type === "touchend" ? (e.changedTouches[0] ? e.changedTouches[0].clientX : initialClientX) : e.clientX;
+                     const clientY = e.type === "touchend" ? (e.changedTouches[0] ? e.changedTouches[0].clientY : initialClientY) : e.clientY;
+                     activeItem.dataset.translateX = initialTranslateX + (clientX - initialClientX);
+                     activeItem.dataset.translateY = initialTranslateY + (clientY - initialClientY);
+                }
+
+                activeItem = null;
+            }
+
+            
+            // 4. NEXT 버튼 기능 (애니메이션 및 뷰 전환)
+            if (nextButton) {
+                nextButton.addEventListener('click', () => {
+                    
+                    // 1. 데이터 수집 및 저장 (sessionStorage)
+                    const bouquetData = flowerElements.map(flowerEl => {
+                        return {
+                            imgSrc: flowerEl.getAttribute('src'),
+                            alt: flowerEl.getAttribute('alt'),
+                            width: flowerEl.style.width,
+                            zIndex: flowerEl.style.zIndex || 2,
+                            transform: flowerEl.style.transform,
+                            translateX: flowerEl.dataset.translateX,
+                            translateY: flowerEl.dataset.translateY,
+                            rotate: flowerEl.dataset.rotate,
+                            scaleX: flowerEl.dataset.scaleX
+                        };
+                    });
+
+                    try {
+                        sessionStorage.setItem('completedBouquetData', JSON.stringify(bouquetData));
+                        console.log("꽃다발 데이터 저장됨.");
+                    } catch (error) {
+                        console.error("데이터 저장 실패:", error);
+                        alert("꽃다발 데이터 저장에 실패했습니다.");
+                        return; // 저장 실패 시 중단
+                    }
+
+                    // 2. body에 'complete-view' 클래스 추가 (CSS 애니메이션 시작)
+                    document.body.classList.add('complete-view');
+                    
+                    // 3. 기존 UI 숨기기
+                    headerArea.style.opacity = '0';
+                    descriptionBox.style.opacity = '0';
+                    buttonArea.style.opacity = '0';
+
+                    // 4. 새로운 UI 표시
+                    completeTextArea.style.display = 'block';
+                    completeButtonArea.style.display = 'flex'; // flex로 설정
+                    setTimeout(() => { // 잠시 후 fade-in
+                        completeTextArea.style.opacity = '1';
+                        completeButtonArea.style.opacity = '1';
+                    }, 500); // 0.5초 뒤 (CSS transition 시간)
+
+                    // 5. 드래그 기능 비활성화
+                    flowerElements.forEach(item => {
+                        item.style.pointerEvents = 'none';
+                        item.style.cursor = 'default';
+                    });
+                });
+            } else {
+                console.error("#next-button 요소를 찾을 수 없습니다.");
+            }
+
+            // 5. 수정하기 버튼 기능 (로직 유지)
+            if(modifyButton) {
+                modifyButton.addEventListener('click', () => {
+                    // 1. body에서 'complete-view' 클래스 제거 (애니메이션 복귀)
+                    document.body.classList.remove('complete-view');
+
+                    // 2. 새로운 UI 숨기기
+                    completeTextArea.style.opacity = '0';
+                    completeButtonArea.style.opacity = '0';
+                    setTimeout(() => {
+                        completeTextArea.style.display = 'none';
+                        completeButtonArea.style.display = 'none';
+                    }, 500); // fade-out 시간
+
+                    // 3. 기존 UI 다시 표시
+                    headerArea.style.opacity = '1';
+                    descriptionBox.style.opacity = '1';
+                    buttonArea.style.opacity = '1';
+
+                    // 4. 드래그 기능 다시 활성화
+                    flowerElements.forEach(item => {
+                        item.style.pointerEvents = 'auto';
+                        item.style.cursor = 'grab';
+                    });
+                });
+            }
+
+            // 🌟 6. WRITE LETTER 버튼 기능: 캡처, Blob URL 저장, 페이지 이동 🌟
+            if(writeLetterButton) {
+                writeLetterButton.addEventListener('click', () => {
+                    
+                    writeLetterButton.textContent = "캡처 중...";
+                    writeLetterButton.disabled = true;
+
+                    // 캡처 대상: CSS transition으로 축소된 상태의 #bouquet-container
+                    const captureTarget = bouquetContainer; 
+                    
+                    // 캡처 전에 CSS 애니메이션이 끝났는지 확인하거나 충분한 시간을 줍니다.
+                    setTimeout(() => {
+                        html2canvas(captureTarget, {
+                            useCORS: true,
+                            backgroundColor: null,
+                            // 캡처할 때, 꽃다발을 전체 크기로 캡처하도록 transform 속성을 제거합니다.
+                            // 하지만 이미 축소된 상태이므로, 임시 컨테이너를 만들어 캡처하는 것이 안전합니다.
+                            
+                            // 캡처를 위해 임시로 스타일 변경: 축소된 상태를 유지하고 투명 배경으로 캡처
+                            // (이미 complete-view 클래스가 적용되어 축소된 상태입니다)
+                            
+                        }).then(canvas => {
+                            // 1. Blob으로 변환
+                            canvas.toBlob(function(blob) {
+                                // 2. Blob URL 생성
+                                const finalBouquetBlobURL = URL.createObjectURL(blob);
+                                
+                                // 3. 세션 스토리지에 저장
+                                sessionStorage.setItem('finalBouquetImageURL', finalBouquetBlobURL);
+                                
+                                console.log("꽃다발 이미지 Blob URL 저장 완료:", finalBouquetBlobURL.substring(0, 30) + '...');
+                                
+                                // 4. 불필요한 세션 스토리지 데이터 제거 (write_letter.html을 건너뛰었기 때문에)
+                                sessionStorage.removeItem('capturedLetterImageURL'); 
+                                sessionStorage.removeItem('senderName'); 
+                                sessionStorage.removeItem('recipientName'); 
+                                
+                                // 5. 다음 페이지로 이동
+                                writeLetterButton.textContent = "WRITE LETTER";
+                                writeLetterButton.disabled = false;
+                                window.location.href = 'delivery.html';
+
+                            }, 'image/png'); 
+                            
+                        }).catch(err => {
+                            console.error("꽃다발 캡처 실패:", err);
+                            writeLetterButton.textContent = "ERROR";
+                            writeLetterButton.disabled = false;
+                            alert("꽃다발 이미지 생성 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+                        });
+                    }, 50); // 짧은 지연 시간
+                });
+            }
+
+
+            // 페이지 로드 시 꽃 생성
+             setTimeout(generateRandomFlowers, 250);
+
+        });
+    </script>
+</body>
+</html>
