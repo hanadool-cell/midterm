@@ -1,833 +1,444 @@
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Bouquet - 전달하기</title>
+    <script>
+    // Adobe Typekit 로더 (기존 유지)
+    (function(d) {
+      var config = {
+        kitId: 'bno4gef',
+        scriptTimeout: 3000,
+        async: true
+      },
+      h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+    })(document);
+    </script>
+    <link rel="stylesheet" href="https://use.typekit.net/bno4gef.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <meta charset="UTF-8">
+    <style>
+        /* --- 기본 및 비디오 스타일 --- */
+        body {
+            background-color: #000;
+            color: white;
+            height: 100vh;
+            margin: 0;
+            font-family: "pretendard", sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
 
-    <title>Digital Bouquet - 전달하기</title>
-
-    <script>
-
-    // Adobe Typekit 로더 (기존 유지)
-
-    (function(d) {
-
-      var config = {
-
-        kitId: 'bno4gef',
-
-        scriptTimeout: 3000,
-
-        async: true
-
-      },
-
-      h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
-
-    })(document);
-
-    </script>
-
-    <link rel="stylesheet" href="https://use.typekit.net/bno4gef.css">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-
-
-    <style>
-
-        /* --- 기본 및 비디오 스타일 --- */
-
-        body {
-
-            background-color: #000;
-
-            color: white;
-
-            height: 100vh;
-
-            margin: 0;
-
-            font-family: "pretendard", sans-serif;
-
-            overflow: hidden;
-
-            position: relative;
-
+        /* --- UI 및 중앙 정렬 --- */
+        #delivery-ui-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            z-index: 10;
+        }
+        
+        /* --- 꽃다발 드래그 가능 요소 (초기 위치 수정) --- */
+        #draggable-bouquet {
+            position: absolute;
+            width: 40vw;
+            height: auto;
+            max-height: 80vh;
+            /* 초기 상태: 클릭 유도 커서 */
+            cursor: pointer;
+            user-select: none;
+            /* [수정] 완전 하단으로 배치 (화면 밖) */
+            left: 52%; /* 중앙 정렬 */
+            bottom: -20vh; /* 완전 하단 (화면 밖으로 숨김) */
+            transform: translateX(-50%); /* 중앙 정렬 보정 */
+            z-index: 20;
+            transition: opacity 1.5s ease-out, top 1.5s ease-out, bottom 1.5s ease-out, transform 1.5s ease-out; 
+            opacity: 1; /* 초기에는 보이도록 설정 */
+        }
+        /* 꽃다발이 비디오가 끝난 후 드래그 모드에서만 'grab' 커서가 되도록 설정 */
+        #draggable-bouquet[style*="cursor: grab"] {
+            cursor: grab !important;
         }
 
-
-
-        #video-background {
-
-            position: fixed;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            object-fit: cover;
-
-            z-index: 0;
-
-        }
-
-
-
-        /* --- UI 및 중앙 정렬 --- */
-
-        #delivery-ui-wrapper {
-
-            position: absolute;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            justify-content: flex-end;
-
-            z-index: 10;
-
-        }
-
-        
-
-        /* --- 꽃다발 드래그 가능 요소 (초기 위치 수정) --- */
-
-        #draggable-bouquet {
-
-            position: absolute;
-
-            width: 40vw;
-
-            height: auto;
-
-            max-height: 80vh;
-
-            cursor: grab;
-
-            user-select: none;
-
-            /* [수정] 완전 하단으로 배치 */
-
-            left: 52%; /* 중앙 정렬 */
-
-            bottom: -20vh; /* 완전 하단 */
-
-            transform: translateX(-50%); /* 중앙 정렬 보정 */
-
-            z-index: 20;
-
-            transition: opacity 1.5s ease-out; 
-
-        }
-
-        
-
-        /* --- 파동 애니메이션 (Grab Signal) --- */
-
-        @keyframes pulse {
-
-            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-
-            70% { box-shadow: 0 0 0 60px rgba(255, 255, 255, 0); }
-
-            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-
-        }
-
-
-
-        .pulse-target {
-
-            border-radius: 50%;
-
-            transition: all 0.3s;
-
-            pointer-events: none;
-
-            position: absolute;
-
-            top: 50%;
-
-            left: 50%;
-
-            transform: translate(-50%, -50%);
-
-            width: 30px;
-
-            height: 30px;
-
-            background-color: rgba(255, 255, 255, 0.8);
-
-            animation: pulse 2s infinite;
-
-            z-index: 99;
-
-        }
-
-        
-
-        /* [수정] 초기 신호 위치: 꽃다발과 동일하게 완전 하단 */
-
-        #initial-signal {
-
-            bottom: 5vh; /* 꽃다발이 있는 영역에 배치 */
-
-            
-
-            top: auto !important; /* JS의 top 설정을 무시 */
-
-        }
-
-
-
-        /* 전달 목표 지점 파동 위치 조정 */
-
-        #target-signal {
-
-             bottom: 60% !important; /* 전달 목표 지점 (화면 중앙 상단 근처) */
-
-             top: auto !important;
-
-        }
-
-
-
-        /* --- 안내 메시지 박스 --- */
-
-        #guide-message {
-
-            position: fixed;
-
-            top: 50%;
-
-            left: 50%;
-
-            transform: translate(-50%, -50%);
-
-            padding: 2vw 4vw;
-
-            background-color: rgba(0, 0, 0, 0.7);
-
-            color: #cdff45;
-
-            font-size: 1.5vw;
-
-            text-align: center;
-
-            z-index: 50;
-
-            opacity: 0;
-
-            transition: opacity 0.5s ease-in-out ;
-
-            pointer-events: none;
-
-        }
-
-
-
-        #guide-message.show {
-
-            opacity: 1;
-
-        }
-
-        
-
-        /* --- 전달 완료 화면 --- */
-
-        #completion-overlay {
-
-            position: fixed;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            background-color: rgba(0, 0, 0, 0.9);
-
-            display: none;
-
-            flex-direction: column;
-
-            align-items: center;
-
-            justify-content: center;
-
-            z-index: 100;
-
-        }
-
-
-
-        #completion-box {
-
-            padding: 4vw 6vw;
-
-            background-color: rgba(0, 0, 0, 0.9); 
-
-            border: 1px solid #cdff45;
-
-            color: #cdff45;
-
-            text-align: center;
-
-            font-family: "argent-pixel-cf", sans-serif;
-
-            font-size: 3vw;
-
-            box-shadow: 0 0 30px rgba(205, 255, 69, 0.5);
-
-            display: flex; 
-
-            flex-direction: column; 
-
-            align-items: center; 
-
-        }
-
-
-
-        #go-main-button {
-
-            padding: 1vw 5vw;
-
-            font-size: 2vw;
-
-            font-family: "argent-pixel-cf", sans-serif;
-
-            font-weight: 900;
-
-            font-style: regular;
-
-            color: #cdff45;
-
-            background: rgba(0, 0, 0, 0.434);
-
-            border: #cdff45 1px solid ;
-
-            cursor: pointer;
-
-            transition: background 0.3s, color 0.3s;
-
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-            margin-top: 4vw;;
-
-        }
-
-        #go-main-button:hover {
-
-            background: #cdff45;
-
-            color: rgb(0, 0, 0);
-
-        }
-
-        
-
-    </style>
-
-    
-
+        
+        /* --- 파동 애니메이션 (Grab Signal) --- */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 60px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        .pulse-target {
+            border-radius: 50%;
+            transition: all 0.3s;
+            pointer-events: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.8);
+            animation: pulse 2s infinite;
+            z-index: 99;
+        }
+        
+        /* [수정] 초기 신호 위치: 꽃다발이 있는 영역에 배치 (클릭 유도) */
+        #initial-signal {
+            bottom: 5vh; 
+            top: auto !important; 
+        }
+
+        /* 전달 목표 지점 파동 위치 조정 */
+        #target-signal {
+             bottom: 60% !important; /* 전달 목표 지점 (화면 중앙 상단 근처) */
+             top: auto !important;
+        }
+
+        /* --- 안내 메시지 박스 --- */
+        #guide-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 2vw 4vw;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #cdff45;
+            font-size: 1.5vw;
+            text-align: center;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out ;
+            pointer-events: none;
+        }
+
+        #guide-message.show {
+            opacity: 1;
+        }
+        
+        /* --- 전달 완료 화면 --- */
+        #completion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #completion-box {
+            padding: 4vw 6vw;
+            background-color: rgba(0, 0, 0, 0.9); 
+            border: 1px solid #cdff45;
+            color: #cdff45;
+            text-align: center;
+            font-family: "argent-pixel-cf", sans-serif;
+            font-size: 3vw;
+            box-shadow: 0 0 30px rgba(205, 255, 69, 0.5);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        #go-main-button {
+            padding: 1vw 5vw;
+            font-size: 2vw;
+            font-family: "argent-pixel-cf", sans-serif;
+            font-weight: 900;
+            font-style: regular;
+            color: #cdff45;
+            background: rgba(0, 0, 0, 0.434);
+            border: #cdff45 1px solid ;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 4vw;;
+        }
+        #go-main-button:hover {
+            background: #cdff45;
+            color: rgb(0, 0, 0);
+        }
+        
+    </style>
+    
 </head>
-
 <body>
+    <video id="video-background" preload="auto" poster="walk_poster.jpg" playsinline muted>
+        <source src="walk.mp4" type="video/mp4"> 
+        Your browser does not support the video tag.
+    </video>
+    
+    <div id="delivery-ui-wrapper">
+        <img id="draggable-bouquet" src="" alt="드래그 가능한 꽃다발">
+        
+        <div id="initial-signal" class="pulse-target"></div>
+        
+        <div id="target-signal" class="pulse-target" style="opacity: 0; display: none;"></div>
+        
+    </div>
 
-    <video id="video-background" preload="auto" poster="walk_poster.jpg" playsinline muted>
-
-        <source src="walk.mp4" type="video/mp4"> 
-
-        Your browser does not support the video tag.
-
-    </video>
-
-    
-
-    <div id="delivery-ui-wrapper">
-
-        <img id="draggable-bouquet" src="" alt="드래그 가능한 꽃다발">
-
-        
-
-        <div id="initial-signal" class="pulse-target"></div>
-
-        
-
-        <div id="target-signal" class="pulse-target" style="opacity: 0; display: none;"></div>
-
-        
-
-    </div>
-
-
-
-    <div id="guide-message"></div>
-
-    
-
-    <div id="completion-overlay">
-
-        <div id="completion-box">
-
-            BOUQUET IS DELIVERED!
-
-            <button id="go-main-button">GO MAIN</button>
-
-        </div>
-
-    </div>
-
-
+    <div id="guide-message"></div>
+    
+    <div id="completion-overlay">
+        <div id="completion-box">
+            BOUQUET IS DELIVERED!
+            <button id="go-main-button">GO MAIN</button>
+        </div>
+    </div>
 
 <script>
-
-    document.addEventListener('DOMContentLoaded', () => {
-
-        const video = document.getElementById('video-background');
-
-        const bouquetImg = document.getElementById('draggable-bouquet');
-
-        const initialSignal = document.getElementById('initial-signal');
-
-        const targetSignal = document.getElementById('target-signal');
-
-        const guideMessage = document.getElementById('guide-message');
-
-        const completionOverlay = document.getElementById('completion-overlay');
-
-        const goMainButton = document.getElementById('go-main-button');
-
-        
-
-        let isDragging = false;
-
-        let videoEnded = false; // 영상 종료 여부 (전달 모드)
-
-        let initialGuideCompleted = false; // 초기 안내 완료 여부
-
-        
-
-        // 🌟 Blob URL 변수 선언 및 데이터 로드 🌟
-
-        const finalBouquetBlobURL = sessionStorage.getItem('finalBouquetImageURL');
-
-        
-
-        if (!finalBouquetBlobURL) {
-
-            alert("꽃다발 이미지 데이터가 없습니다. 다시 시작해주세요.");
-
-            window.location.href = "love.html"; // 적절한 시작 페이지로 변경
-
-            return;
-
-        }
-
-
-
-        bouquetImg.src = finalBouquetBlobURL; 
-
-        
-
-        // ------------------------------------------------------------------
-
-        // [1. 메모리 해제 로직 추가]
-
-        // ------------------------------------------------------------------
-
-        const cleanupBlobURL = () => {
-
-             if (finalBouquetBlobURL) {
-
-                 URL.revokeObjectURL(finalBouquetBlobURL);
-
-                 sessionStorage.removeItem('finalBouquetImageURL');
-
-                 console.log("꽃다발 Blob URL 해제됨.");
-
-             }
-
-             const letterBlobURL = sessionStorage.getItem('capturedLetterImageURL');
-
-             if (letterBlobURL) {
-
-                 URL.revokeObjectURL(letterBlobURL);
-
-                 sessionStorage.removeItem('capturedLetterImageURL');
-
-                 console.log("편지지 Blob URL 해제됨.");
-
-             }
-
-        };
-
-
-
-        window.addEventListener('unload', cleanupBlobURL);
-
-        
-
-        // [2. 초기 설정]
-
-        // 비디오 초기 상태: 정지 상태를 명확히 함
-
-        video.load(); // 첫 프레임을 로드
-
-        initialSignal.style.display = 'none';
-
-
-
-        // [3. 안내 메시지 표시 함수]
-
-        const showGuide = (message, duration, callback) => {
-
-            guideMessage.textContent = message;
-
-            guideMessage.classList.add('show');
-
-            setTimeout(() => {
-
-                guideMessage.classList.remove('show');
-
-                if (callback) {
-
-                    setTimeout(callback, 500); 
-
-                }
-
-            }, duration);
-
-        };
-
-        
-
-        // [4. 비디오 끝 이벤트]
-
-        video.onended = () => {
-
-            videoEnded = true;
-
-            // 비디오 끝 프레임 유지
-
-            video.pause(); 
-
-            video.currentTime = video.duration; 
-
-            
-
-            showGuide("상대방 앞에 도착했어요. 꽃다발을 드래그해 상대에게 전달해주세요!", 3000, () => {
-
-                // 전달 모드 시작: 꽃다발을 끌어서 중앙 목표 지점에 놓도록 안내
-
-                targetSignal.style.display = 'block';
-
-                targetSignal.style.opacity = 1;
-
-            });
-
-        };
-
-        
-
-        // [5. 드래그 로직]
-
-        let offsetX, offsetY;
-
-
-
-        const startDrag = (e) => {
-
-            if (!initialGuideCompleted) return; // 초기 안내가 끝나야 드래그 가능
-
-            if (isDragging) return; // 이미 드래그 중이면 무시
-
-            
-
-            isDragging = true;
-
-            bouquetImg.style.cursor = 'grabbing';
-
-            initialSignal.style.display = 'none'; // 초기 신호 제거
-
-            
-
-            const rect = bouquetImg.getBoundingClientRect();
-
-            
-
-            // 터치 이벤트 대응
-
-            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-
-            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
-
-            
-
-            offsetX = clientX - rect.left;
-
-            offsetY = clientY - rect.top;
-
-
-
-            if (!videoEnded) {
-
-                // 비디오 재생 시작 (꽃다발을 잡는 순간)
-
-                video.play();
-
-                // 드래그 시작 시점의 위치를 절대값으로 고정
-
-                bouquetImg.style.position = 'fixed';
-
-                bouquetImg.style.left = `${clientX - offsetX}px`;
-
-                bouquetImg.style.top = `${clientY - offsetY}px`;
-
-                bouquetImg.style.transform = 'none';
-
-            }
-
-        };
-
-
-
-        const doDrag = (e) => {
-
-            if (!isDragging) return;
-
-
-
-            e.preventDefault(); // 스크롤 방지 (터치 환경)
-
-
-
-            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
-
-            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
-
-
-
-            let newX = clientX - offsetX;
-
-            let newY = clientY - offsetY;
-
-            
-
-            bouquetImg.style.left = `${newX}px`;
-
-            bouquetImg.style.top = `${newY}px`;
-
-            
-
-            if (videoEnded) {
-
-                // 전달 모드: 중앙 전달 지점 도달 확인
-
-                const targetCenterX = window.innerWidth / 2;
-
-                // target-signal의 CSS bottom: 60%에 맞춰 y축 목표 지점 설정
-
-                const targetCenterY = window.innerHeight * (1 - 0.6); 
-
-                
-
-                const bouquetCenterX = newX + (bouquetImg.offsetWidth / 2);
-
-                const bouquetCenterY = newY + (bouquetImg.offsetHeight / 2);
-
-                
-
-                const distance = Math.sqrt(
-
-                    Math.pow(bouquetCenterX - targetCenterX, 2) + 
-
-                    Math.pow(bouquetCenterY - targetCenterY, 2)
-
-                );
-
-
-
-                // 중앙 지점(약 100px 반경)에 도달하면 완료
-
-                if (distance < 100) {
-
-                    finishDeliverySequence();
-
-                }
-
-            }
-
-        };
-
-        
-
-        const stopDrag = () => {
-
-            if (!isDragging) return;
-
-            isDragging = false;
-
-            bouquetImg.style.cursor = 'grab';
-
-
-
-            if (!videoEnded) {
-
-                // 비디오 일시 정지 (꽃다발을 놓는 순간)
-
-                video.pause();
-
-                // 위치 초기화: CSS 하단 중앙으로 다시 돌아가도록 재설정
-
-                bouquetImg.style.position = 'absolute';
-
-                bouquetImg.style.left = '50%';
-
-                bouquetImg.style.top = 'auto'; // top을 auto로 설정하여 bottom이 적용되게 함
-
-                bouquetImg.style.transform = 'translateX(-50%)'; 
-
-                
-
-                // 안내 신호가 없으면 다시 표시
-
-                if (initialSignal.style.display === 'none') {
-
-                    initialSignal.style.display = 'block';
-
-                }
-
-            }
-
-        };
-
-        
-
-        // [6. 최종 전달 완료 시퀀스]
-
-        const finishDeliverySequence = () => {
-
-            // 모든 이벤트 리스너 제거 (중요)
-
-            document.removeEventListener('mousemove', doDrag);
-
-            document.removeEventListener('mouseup', stopDrag);
-
-            document.removeEventListener('touchmove', doDrag);
-
-            document.removeEventListener('touchend', stopDrag);
-
-            
-
-            isDragging = false;
-
-            
-
-            // 1. 페이드 아웃 시작
-
-            bouquetImg.style.opacity = 0; 
-
-            targetSignal.style.display = 'none';
-
-            guideMessage.classList.remove('show');
-
-            
-
-            // 2. 1.5초 후 완료 오버레이 표시
-
-            setTimeout(() => {
-
-                completionOverlay.style.display = 'flex';
-
-                // 🌟 전달이 완료된 후에 Blob URL 해제 🌟
-
-                cleanupBlobURL(); 
-
-            }, 1500); 
-
-        };
-
-
-
-        // [7. 이벤트 리스너 연결]
-
-        bouquetImg.addEventListener('mousedown', startDrag);
-
-        document.addEventListener('mousemove', doDrag);
-
-        document.addEventListener('mouseup', stopDrag);
-
-        
-
-        // 모바일 터치 이벤트
-
-        bouquetImg.addEventListener('touchstart', startDrag, { passive: false });
-
-        document.addEventListener('touchmove', doDrag, { passive: false });
-
-        document.addEventListener('touchend', stopDrag);
-
-
-
-
-
-        // 버튼 이벤트
-
-        goMainButton.addEventListener('click', () => {
-
-            // 이 버튼을 눌러야 메인으로 이동
-
-            window.location.href = "index.html";
-
-        });
-
-
-
-        
-
-        // [8. 초기 안내 메시지]
-
-        setTimeout(() => {
-
-            showGuide("저 앞에 상대방이 있어요. 꽃다발을 계속 클릭한 상태로 상대에게 걸어가세요.", 3000, () => {
-
-                initialGuideCompleted = true; // 초기 안내 완료
-
-                initialSignal.style.display = 'block'; // 초기 드래그 신호 표시
-
-            });
-
-        }, 1000);
-
-    });
-
+    document.addEventListener('DOMContentLoaded', () => {
+        const video = document.getElementById('video-background');
+        const bouquetImg = document.getElementById('draggable-bouquet');
+        const initialSignal = document.getElementById('initial-signal');
+        const targetSignal = document.getElementById('target-signal');
+        const guideMessage = document.getElementById('guide-message');
+        const completionOverlay = document.getElementById('completion-overlay');
+        const goMainButton = document.getElementById('go-main-button');
+        
+        let isDragging = false;
+        let walkStarted = false; // 걷기 시작 여부
+        let videoEnded = false; // 영상 종료 여부 (전달 모드)
+        let initialGuideCompleted = false; // 초기 안내 완료 여부
+        
+        // 🌟 Blob URL 변수 선언 및 데이터 로드 🌟
+        const finalBouquetBlobURL = sessionStorage.getItem('finalBouquetImageURL');
+        
+        if (!finalBouquetBlobURL) {
+            alert("꽃다발 이미지 데이터가 없습니다. 다시 시작해주세요.");
+            window.location.href = "love.html"; // 적절한 시작 페이지로 변경
+            return;
+        }
+
+        bouquetImg.src = finalBouquetBlobURL; 
+        
+        // ------------------------------------------------------------------
+        // [1. 메모리 해제 로직 추가]
+        // ------------------------------------------------------------------
+        const cleanupBlobURL = () => {
+             if (finalBouquetBlobURL) {
+                 URL.revokeObjectURL(finalBouquetBlobURL);
+                 sessionStorage.removeItem('finalBouquetImageURL');
+                 console.log("꽃다발 Blob URL 해제됨.");
+             }
+             const letterBlobURL = sessionStorage.getItem('capturedLetterImageURL');
+             if (letterBlobURL) {
+                 URL.revokeObjectURL(letterBlobURL);
+                 sessionStorage.removeItem('capturedLetterImageURL');
+                 console.log("편지지 Blob URL 해제됨.");
+             }
+        };
+
+        window.addEventListener('unload', cleanupBlobURL);
+        
+        // [2. 초기 설정]
+        // 비디오 초기 상태: 정지 상태를 명확히 함
+        video.load(); // 첫 프레임을 로드
+        initialSignal.style.display = 'none';
+
+        // [3. 안내 메시지 표시 함수]
+        const showGuide = (message, duration, callback) => {
+            guideMessage.textContent = message;
+            guideMessage.classList.add('show');
+            setTimeout(() => {
+                guideMessage.classList.remove('show');
+                if (callback) {
+                    setTimeout(callback, 500); 
+                }
+            }, duration);
+        };
+
+        // [3.5. 걷기 시작 함수 - 클릭/터치 시 호출]
+        const startWalking = () => {
+            if (walkStarted || !initialGuideCompleted) return;
+            walkStarted = true;
+            video.play();
+            initialSignal.style.display = 'none';
+            showGuide("상대에게 걸어가고 있어요...", 2000); // 걷는 중 안내
+            
+            // 걷기 시작 시 꽃다발을 숨기고 드래그 불가능하게 만듦
+            bouquetImg.style.opacity = 0; 
+            bouquetImg.style.cursor = 'default';
+            
+            // 걷기 시작 리스너 제거 (중요)
+            bouquetImg.removeEventListener('mousedown', startWalking);
+            bouquetImg.removeEventListener('touchstart', startWalking);
+        };
+        
+        // [4. 비디오 끝 이벤트]
+        video.onended = () => {
+            videoEnded = true;
+            // 비디오 끝 프레임 유지
+            video.pause(); 
+            video.currentTime = video.duration; 
+            
+            showGuide("상대방 앞에 도착했어요. 꽃다발을 드래그해 상대에게 전달해주세요! 💐", 3000, () => {
+                // 전달 모드 시작: 꽃다발을 끌어서 중앙 목표 지점에 놓도록 안내
+                targetSignal.style.display = 'block';
+                targetSignal.style.opacity = 1;
+
+                // 꽃다발을 목표 지점 근처로 이동 (화면 중앙 상단 근처)
+                bouquetImg.style.position = 'absolute';
+                bouquetImg.style.width = '30vw'; // 전달하기 쉽도록 크기를 약간 줄임
+                bouquetImg.style.top = '30%'; // 목표 지점 근처
+                bouquetImg.style.left = '50%';
+                bouquetImg.style.bottom = 'auto'; // bottom 초기화
+                bouquetImg.style.transform = 'translateX(-50%)';
+                bouquetImg.style.opacity = 1; // 꽃다발 다시 등장
+                bouquetImg.style.cursor = 'grab'; // 드래그 커서로 변경
+
+                // 전달 모드에서만 드래그 이벤트 리스너를 다시 붙임 (이미 붙어있지만 명시적으로)
+                bouquetImg.addEventListener('mousedown', startDrag);
+                bouquetImg.addEventListener('touchstart', startDrag, { passive: false });
+            });
+        };
+        
+        // [5. 드래그 로직]
+        let offsetX, offsetY;
+
+        const startDrag = (e) => {
+            if (!videoEnded) return; // 비디오가 끝나지 않았으면 드래그 불가능
+            if (isDragging) return; // 이미 드래그 중이면 무시
+            
+            isDragging = true;
+            bouquetImg.style.cursor = 'grabbing';
+            targetSignal.style.opacity = 0.3; // 드래그 시작 시 신호 유지
+            
+            const rect = bouquetImg.getBoundingClientRect();
+            
+            // 터치 이벤트 대응
+            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+            
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+
+            // 드래그 시작 시점의 위치를 절대값으로 고정
+            bouquetImg.style.position = 'fixed';
+            bouquetImg.style.left = `${clientX - offsetX}px`;
+            bouquetImg.style.top = `${clientY - offsetY}px`;
+            bouquetImg.style.bottom = 'auto';
+            bouquetImg.style.transform = 'none';
+        };
+
+        const doDrag = (e) => {
+            if (!isDragging || !videoEnded) return; // 전달 모드일 때만 드래그 허용
+
+            e.preventDefault(); // 스크롤 방지 (터치 환경)
+
+            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+
+            let newX = clientX - offsetX;
+            let newY = clientY - offsetY;
+            
+            bouquetImg.style.left = `${newX}px`;
+            bouquetImg.style.top = `${newY}px`;
+            
+            // 전달 모드: 중앙 전달 지점 도달 확인
+            const targetCenterX = window.innerWidth / 2;
+            // target-signal의 CSS bottom: 60%에 맞춰 y축 목표 지점 설정
+            const targetCenterY = window.innerHeight * (1 - 0.6); 
+            
+            const bouquetCenterX = newX + (bouquetImg.offsetWidth / 2);
+            const bouquetCenterY = newY + (bouquetImg.offsetHeight / 2);
+            
+            const distance = Math.sqrt(
+                Math.pow(bouquetCenterX - targetCenterX, 2) + 
+                Math.pow(bouquetCenterY - targetCenterY, 2)
+            );
+
+            // 중앙 지점(약 100px 반경)에 도달하면 완료
+            if (distance < 100) {
+                finishDeliverySequence();
+            }
+        };
+        
+        const stopDrag = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            if (videoEnded) { // 전달 모드에서만 실행
+                bouquetImg.style.cursor = 'grab';
+                targetSignal.style.opacity = 1; // 드래그 해제 시 신호 다시 선명하게
+            } else {
+                // 비디오 재생 중에는 드래그 로직이 실행되지 않으므로 이 부분은 걷기 로직이 필요하지 않음
+            }
+        };
+        
+        // [6. 최종 전달 완료 시퀀스]
+        const finishDeliverySequence = () => {
+            // 모든 이벤트 리스너 제거 (중요)
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', doDrag);
+            document.removeEventListener('touchend', stopDrag);
+            bouquetImg.removeEventListener('mousedown', startDrag); // 전달 모드 드래그 리스너 제거
+
+            isDragging = false;
+            
+            // 1. 페이드 아웃 시작
+            bouquetImg.style.opacity = 0; 
+            targetSignal.style.display = 'none';
+            guideMessage.classList.remove('show');
+            
+            // 2. 1.5초 후 완료 오버레이 표시
+            setTimeout(() => {
+                completionOverlay.style.display = 'flex';
+                // 🌟 전달이 완료된 후에 Blob URL 해제 🌟
+                cleanupBlobURL(); 
+            }, 1500); 
+        };
+
+        // [7. 이벤트 리스너 연결]
+        // 초기에는 걷기 시작 리스너만 붙임
+        bouquetImg.addEventListener('mousedown', startWalking);
+        bouquetImg.addEventListener('touchstart', startWalking, { passive: false });
+        
+        // 드래그 이벤트는 문서 전역에 붙여놓고, 로직 내에서 videoEnded로 분기 처리
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchmove', doDrag, { passive: false });
+        document.addEventListener('touchend', stopDrag);
+
+
+        // 버튼 이벤트
+        goMainButton.addEventListener('click', () => {
+            // 이 버튼을 눌러야 메인으로 이동
+            window.location.href = "index.html";
+        });
+
+        
+        // [8. 초기 안내 메시지]
+        setTimeout(() => {
+            // 안내 메시지 수정: 꽃다발을 클릭/터치하여 걷기 시작하도록 유도
+            showGuide("저 앞에 상대방이 기다리고 있어요. 꽃다발을 **클릭 또는 터치하여** 걸어가세요.", 3000, () => {
+                initialGuideCompleted = true; // 초기 안내 완료
+                initialSignal.style.display = 'block'; // 초기 클릭/터치 신호 표시
+            });
+        }, 1000);
+    });
 </script>
-
 </body>
-
 </html>
